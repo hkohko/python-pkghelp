@@ -37,7 +37,8 @@ def docstring(pkg, method):
         print(getattr(pkg, method).__doc__)
         userinput()
     except ModuleNotFoundError:
-        print(getattr(pkg, method).__doc__)
+        x = getattr(builtins, pkg)
+        print(getattr(x, method).__doc__)
         userinput()
 
 
@@ -50,7 +51,7 @@ def main(pkg, method=''):
         userinput()
     try:
         print(match)
-        print(closest)
+        print(closest[0:5])
         docstring(pkg, match)
     except UnboundLocalError:
         pass
