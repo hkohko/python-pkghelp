@@ -4,11 +4,15 @@ from Levenshtein import ratio
 import builtins
 
 
-def return_methods(pkg):
+def return_methods(pkg): 
     try:
-        current_pkg = __import__(pkg)
-    except ModuleNotFoundError:
-        current_pkg = getattr(builtins, pkg)
+        try:
+            current_pkg = __import__(pkg)
+        except ModuleNotFoundError:
+            current_pkg = getattr(builtins, pkg)
+    except AttributeError:
+        print("Package unavailable. Perhaps you're in a virtual environment?")
+        userinput()
     methods = (inspect.getmembers(current_pkg))
     names = [module for module, _ in methods]
     return names
@@ -35,7 +39,6 @@ def docstring(pkg, method):
     except ModuleNotFoundError:
         print(getattr(pkg, method).__doc__)
         userinput()
-
 
 
 def main(pkg, method=''):
@@ -67,12 +70,4 @@ def userinput():
         main(entry)
 
 
-    # pkg_list = subprocess.run(['pip', 'list'], capture_output=True, text=True)
-    # print(pkg_list.stdout.strip())
 userinput()
-
-
-#user types in a package (no fsearch) DONE
-#gets a list of methods in that package DONE
-#pick a method from that package (fsearch this) DONE
-#returns documetation with pkg.method.__doc__ DONE
