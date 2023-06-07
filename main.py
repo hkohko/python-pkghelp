@@ -2,9 +2,10 @@ import time
 import inspect
 from Levenshtein import ratio
 import builtins
+from typing import List, Tuple, Optional, Dict
 
 
-def return_methods(pkg): 
+def return_methods(pkg: str) -> List[str]: 
     try:
         try:
             current_pkg = __import__(pkg)
@@ -18,22 +19,26 @@ def return_methods(pkg):
     return names
 
 
-def fsearch(var, names):
-    cutoff = 0.55 #tentative
-    candidates = {}
+def fsearch(var: str, names: List[str]) -> Tuple[None, None] | Tuple[str, Optional[List[Tuple[str, int]]]]:
+    cutoff: float = 0.55 #tentative
+    candidates: Dict = {}
+
     for i in names:
-        score = ratio(var, i)
+        score: float = ratio(var, i)
         if score > cutoff:
             candidates[i] = int((score*100))
-    try:
-        return max(candidates, key=candidates.get), sorted(candidates.items(), key=lambda x:x[1], reverse=True)
-    except ValueError:
-        pass
+
+    candidates_sorted = sorted(candidates.items(), key=lambda x:x[1], reverse=True)
+
+    if candidates and candidates_sorted:
+        return max(candidates, key=lambda x:candidates[x]), candidates_sorted
+    else:
+        return None, None
 
 
-def docstring(pkg, method):
+def docstring(pkg, method = '') -> None:
     try:
-        pkg = __import__(pkg)
+        pkg = __import__(pkg) #type: ignore
         print(getattr(pkg, method).__doc__)
         userinput()
     except ModuleNotFoundError:
@@ -42,29 +47,35 @@ def docstring(pkg, method):
         userinput()
 
 
-def main(pkg, method=''):
-    names = return_methods(pkg)
-    try:
-        match, closest = fsearch(method, names)
-    except TypeError:
+def main(pkg: str, method:str ='') -> None:
+    names: List[str] = return_methods(pkg)
+    if fsearch(method, names) == None: 
         print(names)
         userinput()
-    try:
-        print(match)
-        print(closest[0:5])
-        docstring(pkg, match)
-    except UnboundLocalError:
-        pass
+    else:
+        matches, closest = fsearch(method, names)
+        if matches is not None and closest is not None:
+            print(matches)
+            print(closest[0:5])
+            docstring(pkg, matches)
+        elif matches is None and closest is None:
+            print(names)
+            userinput()
+        else:
+            print('')
+        
 
-
-def userinput():
+def userinput() -> None:
     try:
-        entry = input("Package/module name: ")
+        print("Press Ctrl+C to exit")
+        entry: str = input("Package/module name: ")
     except KeyboardInterrupt:
         print('Exiting...')
         time.sleep(1)
         exit()
     try:
+        pkg:str
+        method:str
         pkg, method = entry.strip().split('.')
         main(pkg, method)
     except ValueError:
