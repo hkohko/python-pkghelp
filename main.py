@@ -81,5 +81,5 @@ def userinput() -> None:
     except ValueError:
         main(entry)
 
-
-userinput()
+if __name__ == "__main__":
+    userinput()
